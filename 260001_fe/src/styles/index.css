@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Dark theme (default) */
+  html {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  /* Light theme */
+  html.light {
+    @apply bg-white text-gray-900;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium;
+  }
+
+  html.light .btn-primary {
+    @apply bg-black hover:bg-gray-800 text-white;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors font-medium;
+  }
+
+  html.light .btn-secondary {
+    @apply bg-black hover:bg-gray-800 text-white;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-gray-800 rounded-lg p-6 border border-gray-700;
+  }
+
+  html.light .card {
+    @apply bg-white border border-gray-300;
+  }
+
+  /* Input Fields */
+  .input-field {
+    @apply w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition;
+  }
+
+  html.light .input-field {
+    @apply bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500;
+  }
+
+  /* Badges - keep same colors for both themes */
+  .badge-success {
+    @apply inline-block px-2 py-1 bg-green-600 text-white text-xs rounded-full font-semibold;
+  }
+  
+  .badge-warning {
+    @apply inline-block px-2 py-1 bg-yellow-500 text-white text-xs rounded-full font-semibold;
+  }
+  
+  .badge-danger {
+    @apply inline-block px-2 py-1 bg-red-600 text-white text-xs rounded-full font-semibold;
+  }
+  
+  .badge-info {
+    @apply inline-block px-2 py-1 bg-blue-600 text-white text-xs rounded-full font-semibold;
+  }
+
+  .badge-mint {
+    @apply inline-block px-2 py-1 bg-teal-500 text-white text-xs rounded-full font-semibold;
+  }
+
+  /* List Container */
+  .app-list-container {
+    @apply border rounded-lg p-4 border-gray-700;
+  }
+
+  html.light .app-list-container {
+    @apply border-gray-400;
+  }
+}
+

@@ -1,0 +1,8 @@
+# Backend (.NET) ignores
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/

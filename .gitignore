@@ -1,0 +1,41 @@
+# Node / build outputs
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# IDE / editor
+.vscode/
+.idea/
+
+# Visual Studio / .NET
+*.suo
+*.user
+.vs/
+
+# General build outputs (catch-all)
+bin/
+obj/
+
+# Project-specific folders (explicit to avoid accidental global ignores)
+/260001_be/bin/
+/260001_be/obj/
+
+# Frontend-specific
+/260001_fe/node_modules/
+/260001_fe/dist/
+/260001_fe/build/
+/260001_fe/.vite/
+/260001_fe/.cache/
+/260001_fe/.parcel-cache/
+
