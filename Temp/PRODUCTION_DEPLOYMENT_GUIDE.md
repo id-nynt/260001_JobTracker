@@ -4,6 +4,8 @@
 
 This guide is written for beginners. We'll explain every concept and walk through each step carefully.
 
+> 💡 **Just want FREE hosting?** Check out [`RENDER_DEPLOYMENT_GUIDE.md`](RENDER_DEPLOYMENT_GUIDE.md) instead - deploy in 5 minutes, completely FREE, no time limit!
+
 ## Quick Navigation
 
 1. [Choose Your Deployment Path](#choose-your-deployment-path) ⭐ **START HERE**
@@ -16,7 +18,7 @@ This guide is written for beginners. We'll explain every concept and walk throug
 8. [Terraform - Infrastructure as Code](#terraform-infrastructure-as-code)
 9. [GitHub Actions - Automated Deployment](#github-actions-automated-deployment)
 10. [Complete Deployment Walkthrough](#complete-deployment-walkthrough)
-11. [Free Deployment (Railway)](#free-deployment-railway-recommended-for-portfolio)
+11. [Free Deployment (Render - Recommended)](#free-deployment-render--recommended-for-portfolio)
 12. [AWS Cleanup & Cost Management](#aws-cleanup--cost-management)
 13. [Monitoring Your Application](#monitoring-your-application)
 14. [Troubleshooting Guide](#troubleshooting-guide)
@@ -56,60 +58,75 @@ You have **TWO PATHS** to deploy your Job Tracker:
 - ❌ Takes 15-25 minutes to deploy
 - ⚠️ If you leave it running unused, costs continue
 
-### Path B: Free Deployment (Railway) 🚀
+### Path B: Completely FREE Hosting (Render) 🚀
 
 **Best for:**
 
 - Portfolio projects
 - Practice & learning
-- Quick demos
+- When you don't know your hiring timeline
 - Budget-conscious students
 
-**Cost:** Completely FREE (or $5-10 if you exceed free tier)
+**Cost:** Completely FREE forever (no time limit)
 
 **Pros:**
 
-- ✅ 100% FREE
+- ✅ 100% FREE FOREVER (no 30-day limit)
+- ✅ Never goes offline
 - ✅ Super quick setup (5 minutes!)
 - ✅ Auto-deploy on GitHub push
 - ✅ Looks professional on portfolio
 - ✅ No server management
 - ✅ Includes free database
-- ✅ Easy to delete (no leftover costs)
+- ✅ Perfect for uncertain timeline (stays live while job hunting)
+- ✅ Can upgrade anytime if needed
 
 **Cons:**
 
-- ❌ Free tier has limits
-- ❌ Apps sleep after inactivity (30 sec wake-up)
-- ❌ Less control over infrastructure
+- ❌ Free tier caps at 750 compute hours/month (still plenty)
+- ❌ May cold-start if idle (30 second restart)
+- ❌ Less powerful than AWS (fine for portfolio)
 
 ### Decision Matrix
 
-| Question                | Use AWS   | Use Railway       |
+| Question                | Use AWS   | Use Render        |
 | ----------------------- | --------- | ----------------- |
-| Is this for learning?   | Yes       | **Better choice** |
+| Is this for learning?   | No        | **Better choice** |
 | Do I have budget?       | Yes       | Not needed        |
 | Is this production?     | Yes       | No                |
 | Want quick setup?       | No        | **Yes**           |
+| Need it to stay free?   | No        | **Yes**           |
+| Uncertain timeline?     | No        | **Yes**           |
 | How long to deploy?     | 15-25 min | **5 minutes**     |
 | Cost if you forget it?  | **HIGH**  | Free              |
 | Show enterprise skills? | **Yes**   | Basic             |
 
 ### My Recommendation
 
-🎯 **For you (portfolio + practice): Use Railway!**
+🎯 **For you (portfolio + practice, uncertain timeline): Use Render!**
 
 - ✅ Deploy in 5 minutes
-- ✅ Completely free
-- ✅ Still looks great on resume
+- ✅ Completely FREE forever (no time limit)
+- ✅ Stays live while you job hunt
+- ✅ Perfect for interviews - \"Here's my deployed app!\"
+- ✅ Looks great on resume/portfolio
+- ✅ Zero server management
 - ✅ No risk of surprise costs
-- ✅ Easy to delete
+- ✅ Easy to delete anytime
 
-**Use AWS only if:** You want to practice enterprise deployment and have a budget.
+**Why Render is better than Railway:**
+
+- Railway has 30-day free limit (then costs money or goes offline)
+- Render is FREE FOREVER with no time limit
+- Perfect for your situation since you don't know when you'll get hired
+
+**Use AWS only if:** You want to practice enterprise deployment and have a $70-100/month budget.
 
 ---
 
 ## IMPORTANT: AWS Idle Cost Warning ⚠️
+
+**Only applies if you choose Path A (AWS). If using Render, you can skip this.**
 
 **If you set up AWS and then leave it running without using it:**
 
@@ -1595,115 +1612,104 @@ jobs:
 
 ---
 
-## Free Deployment (Railway - Recommended for Portfolio) 🚀
+## Free Deployment (Render - Recommended for Portfolio) 🚀
 
-**If you chose Path B (Free), start here!**
+**If you chose Path B (Completely FREE), start here!**
 
-### Why Railway?
+> For a standalone, detailed guide, see [`RENDER_DEPLOYMENT_GUIDE.md`](RENDER_DEPLOYMENT_GUIDE.md)
 
-- ✅ **Completely FREE** for most projects
+### Why Render?
+
+- ✅ **Completely FREE forever** (no 30-day limit)
+- ✅ **Never goes offline** - stays live indefinitely
 - ✅ **5-minute setup** vs 15-25 minutes for AWS
-- ✅ **Auto-deploy** - push to GitHub, it deploys automatically
-- ✅ **Includes database** - no setup needed
+- ✅ **Auto-deploy** - push to GitHub, it updates automatically
+- ✅ **Includes database** - free PostgreSQL included
 - ✅ **Global hosting** - fast for users worldwide
-- ✅ **No server management** - they handle everything
-- ✅ **No cleanup needed** - just delete the project if done
+- ✅ **No server management** - fully managed
+- ✅ **Perfect for uncertain timeline** - stays running while you job hunt
 - ✅ **Looks professional** - perfect for portfolio
+- ✅ **No credit card needed**
 
-### Step-by-Step Railway Deployment
+### Quick Step-by-Step (5 Minutes)
 
-**Step 1: Create Railway Account (1 minute)**
+**Step 1: Create Render Account** (1 min)
 
-1. Go to https://railway.app
-2. Click "Login with GitHub"
-3. Authorize Railway to access your GitHub account
-4. You're in!
+1. Go to https://render.com
+2. Click "Sign up" → "Continue with GitHub"
+3. Authorize Render
+4. Done!
 
-**Step 2: Create New Project (1 minute)**
+**Step 2: Deploy Backend** (1 min)
 
-1. Click "New Project" button
-2. Select "Deploy from GitHub repo"
-3. Select your `260001_Job_Tracker` repository
-4. Click "Deploy"
+1. Click "New +" → "Web Service"
+2. Select your repository
+3. Runtime: `.NET`
+4. Plan: `Free`
+5. Deploy!
 
-**Step 3: Auto-Detected Services (Already Done)**
+**Step 3: Deploy Database** (1 min)
 
-Railway automatically creates:
+1. Click "New +" → "PostgreSQL"
+2. Name: `job-tracker-db`
+3. Plan: `Free`
+4. Create!
 
-- **Frontend**: Node.js environment for React app
-- **Backend**: .NET environment for C# API
-- Click "Add" → PostgreSQL for your database
+**Step 4: Deploy Frontend** (1 min)
 
-**Step 4: Set Environment Variables (1 minute)**
+1. Click "New +" → "Web Service"
+2. Runtime: `Node`
+3. Build: `cd 260001_fe && npm install && npm run build`
+4. Plan: `Free`
+5. Deploy!
 
-For **Backend Service**:
+**Step 5: Connect Services** (1 min)
 
-1. Go to Backend service settings
-2. Add variable: `ASPNETCORE_ENVIRONMENT` = `Production`
-3. Database connection is **auto-created** by Railway
+1. Backend: Add `ASPNETCORE_ENVIRONMENT=Production` variable
+2. Add database connection string variable
+3. Frontend: Add `VITE_API_URL` pointing to backend
+4. Done! ✅
 
-For **Frontend Service**:
+### Your App is Live
 
-1. Go to Frontend service settings
-2. Add variable: `VITE_API_URL` = `https://your-backend-url.railway.app/api`
-   - You'll get the backend URL from Railway dashboard
+Find your frontend URL in Render dashboard - that's your live app! 🎉
 
-**Step 5: Deploy (2 minutes)**
+### Render vs Railway vs AWS
 
-1. Click "Deploy" button
-2. Watch the logs - should show success
-3. Both frontend and backend deploy automatically
+| Feature          | Render       | Railway      | AWS          |
+| ---------------- | ------------ | ------------ | ------------ |
+| **Cost**         | FREE forever | 30 days only | $70-100/mo   |
+| **Setup Time**   | 5 min        | 5 min        | 15-25 min    |
+| **Database**     | FREE         | FREE         | $30/mo       |
+| **Stays Online** | YES ✅       | 30 days only | Always       |
+| **Time Limit**   | NONE ✅      | 30 days      | N/A          |
+| **Auto-Deploy**  | YES          | YES          | Manual       |
+| **Complexity**   | Simple       | Simple       | Very Complex |
 
-**Step 6: Get Your Live URLs (30 seconds)**
+### Why Render Is Best for Your Situation
 
-1. Go to Railway project dashboard
-2. Click **Frontend** service → copy the public URL
-3. Share this URL - your app is LIVE! 🎉
+- ✅ Free forever (perfect since you don't know hiring timeline)
+- ✅ App stays live while you job hunt
+- ✅ Can show working app in interviews
+- ✅ Never goes offline due to time limits
+- ✅ Professional looking URL
+- ✅ Can upgrade anytime if needed
+- ✅ Zero server management required
 
-### What You Get with Railway
+### Delete Your Render Project
 
-| Feature            | AWS                               | Railway                  |
-| ------------------ | --------------------------------- | ------------------------ |
-| **Setup Time**     | 15-25 minutes                     | 5 minutes                |
-| **Server Setup**   | Use Terraform                     | Automatic                |
-| **Database Setup** | Create RDS manually               | Automatic                |
-| **Deploy**         | Code → GitHub Actions → AWS       | Code → Auto-deployed     |
-| **Auto-restart**   | No (you set up monitoring)        | Yes                      |
-| **Cost**           | $70-100/month                     | FREE                     |
-| **Cleanup**        | 30 minutes (delete all resources) | Delete project (instant) |
+When done:
 
-### Actual Cost (Railway)
+1. Go to Render dashboard
+2. Click service
+3. Go to "Settings"
+4. Click "Delete Service"
+5. Confirm
+6. Done - cost is **$0**!
 
-**Free tier provides:**
+---
 
-- 500 compute hours/month
-- 5GB storage
-- Database included
-
-**Your app uses:**
-
-- ~100 hours/month (plenty in free tier)
-- ~500MB storage (well under 5GB)
-
-**Monthly cost: $0** ✅
-
-**If you exceed free tier:**
-
-- Extra compute: $0.000556/hour = ~$5-10/month extra (MAX)
-- Railway will never surprise you with bills
-
-### Delete Your Railway Project
-
-When you're done with your portfolio project:
-
-1. Go to Railway dashboard
-2. Click **Settings** (gear icon, bottom right)
-3. Scroll to **Danger Zone** section
-4. Click **Delete Project**
-5. Confirm deletion
-6. Done - everything is deleted instantly
-
-**Cost after deletion: $0** - completely gone!
+**For complete details, see [`RENDER_DEPLOYMENT_GUIDE.md`](RENDER_DEPLOYMENT_GUIDE.md)**
 
 ---
 
@@ -1711,7 +1717,7 @@ When you're done with your portfolio project:
 
 This is the step-by-step process to get your app live on AWS.
 
-**⚠️ IMPORTANT:** This section is only for users who chose **Path A (Professional AWS)**. If you chose Railway, you're already live at this point - no need to follow this section!
+**⚠️ IMPORTANT:** This section is only for users who chose **Path A (Professional AWS)**. If you chose Render, you're already live at this point - no need to follow this section!
 
 **⚠️ REMINDER:** When finished with AWS, follow the "AWS Cleanup & Cost Management" section below to delete resources and prevent $61/month in charges!
 

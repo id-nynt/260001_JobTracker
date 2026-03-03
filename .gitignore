@@ -1,12 +1,14 @@
-# Node / build outputs
+# General build outputs (catch-all)
 node_modules/
 dist/
 build/
+bin/
+obj/
 
 # Logs
 *.log
 
-# Environment files
+# Environment files (local secrets - never commit)
 .env
 .env.local
 .env.*.local
@@ -14,28 +16,38 @@ build/
 # macOS
 .DS_Store
 
-# IDE / editor
+# IDE / Editor
 .vscode/
 .idea/
+*.code-workspace
 
 # Visual Studio / .NET
 *.suo
 *.user
+*.csproj.user
 .vs/
+/260001_be/.vs/
+launchSettings.json
+/260001_be/Properties/launchSettings.json
 
-# General build outputs (catch-all)
-bin/
-obj/
-
-# Project-specific folders (explicit to avoid accidental global ignores)
+# Backend-specific ignores
 /260001_be/bin/
 /260001_be/obj/
+/260001_be/appsettings.Development.json
 
-# Frontend-specific
+# Frontend-specific ignores
 /260001_fe/node_modules/
 /260001_fe/dist/
 /260001_fe/build/
 /260001_fe/.vite/
 /260001_fe/.cache/
 /260001_fe/.parcel-cache/
+/260001_fe/.eslintcache
+/260001_fe/npm-debug.log*
+/260001_fe/yarn-debug.log*
+/260001_fe/yarn-error.log*
+/260001_fe/.npm
+
+# Accessibility
+Temp/
 
