@@ -26,5 +26,8 @@ ENV ASPNETCORE_URLS=http://+:10000
 ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 10000
 
+# Create data directory for SQLite
+RUN mkdir -p /app/data
+
 # Start the app
 CMD ["dotnet", "JobTracker.Api.dll"]
