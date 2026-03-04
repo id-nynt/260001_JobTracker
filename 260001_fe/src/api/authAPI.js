@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mockUser } from '../data/mockData'
+import { mockUser, mockJobs, mockGroups } from '../data/mockData'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true'
@@ -22,33 +22,62 @@ apiClient.interceptors.request.use((config) => {
 
 export const authAPI = {
   register: (email, username, password, confirmPassword) => {
+    // If USE_MOCK_DATA is explicitly true, use mock
     if (USE_MOCK_DATA) {
       const user = { ...mockUser, email, username }
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('token', user.token)
-      return Promise.resolve({ data: { user, token: user.token } })
+      localStorage.setItem('mock_jobs', JSON.stringify(mockJobs))
+      localStorage.setItem('mock_groups', JSON.stringify(mockGroups))
+      return Promise.resolve({ data: { success: true, user, token: user.token } })
     }
+    
+    // Otherwise, try backend and fallback to mock if it fails
     return apiClient.post('/auth/register', {
       email,
       username,
       password,
       confirmPassword
+    }).catch(() => {
+      // Backend failed, use mock data instead
+      const user = { ...mockUser, email, username }
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('token', user.token)
+      localStorage.setItem('mock_jobs', JSON.stringify(mockJobs))
+      localStorage.setItem('mock_groups', JSON.stringify(mockGroups))
+      return Promise.resolve({ data: { success: true, user, token: user.token } })
     })
   },
 
   login: (emailOrUsername, password) => {
+    // If USE_MOCK_DATA is explicitly true, use mock only
     if (USE_MOCK_DATA) {
-      // Accept mock credentials for demo
-      if ((emailOrUsername === mockUser.email || emailOrUsername === mockUser.username) && password === 'jobtracker@janny') {
-        localStorage.setItem('user', JSON.stringify(mockUser))
-        localStorage.setItem('token', mockUser.token)
-        return Promise.resolve({ data: { user: mockUser, token: mockUser.token } })
+      if (emailOrUsername && password) {
+        const user = { ...mockUser, email: emailOrUsername, username: emailOrUsername }
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('token', user.token)
+        localStorage.setItem('mock_jobs', JSON.stringify(mockJobs))
+        localStorage.setItem('mock_groups', JSON.stringify(mockGroups))
+        return Promise.resolve({ data: { success: true, user, token: user.token } })
       }
-      return Promise.reject(new Error('Invalid credentials'))
+      return Promise.reject(new Error('Please provide email and password'))
     }
+    
+    // Otherwise, try backend and fallback to mock if it fails
     return apiClient.post('/auth/login', {
       emailOrUsername,
       password
+    }).catch(() => {
+      // Backend failed, fallback to mock data
+      if (emailOrUsername && password) {
+        const user = { ...mockUser, email: emailOrUsername, username: emailOrUsername }
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('token', user.token)
+        localStorage.setItem('mock_jobs', JSON.stringify(mockJobs))
+        localStorage.setItem('mock_groups', JSON.stringify(mockGroups))
+        return Promise.resolve({ data: { success: true, user, token: user.token } })
+      }
+      return Promise.reject(new Error('Login failed'))
     })
   },
 

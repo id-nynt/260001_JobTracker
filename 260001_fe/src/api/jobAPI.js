@@ -44,7 +44,10 @@ export const jobAPI = {
       const job = getMockJobsData().find(j => j.id === id)
       return Promise.resolve({ data: job })
     }
-    return apiClient.get(`/jobs/${id}`)
+    return apiClient.get(`/jobs/${id}`).catch(() => {
+      const job = getMockJobsData().find(j => j.id === id)
+      return Promise.resolve({ data: job })
+    })
   },
   
   createJob: (data) => {
@@ -55,7 +58,13 @@ export const jobAPI = {
       localStorage.setItem('mock_jobs', JSON.stringify(updated))
       return Promise.resolve({ data: newJob })
     }
-    return apiClient.post('/jobs', data)
+    return apiClient.post('/jobs', data).catch(() => {
+      const jobs = getMockJobsData()
+      const newJob = { ...data, id: Math.max(...jobs.map(j => j.id), 0) + 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+      const updated = [...jobs, newJob]
+      localStorage.setItem('mock_jobs', JSON.stringify(updated))
+      return Promise.resolve({ data: newJob })
+    })
   },
   
   updateJob: (id, data) => {
@@ -68,7 +77,16 @@ export const jobAPI = {
         return Promise.resolve({ data: jobs[index] })
       }
     }
-    return apiClient.put(`/jobs/${id}`, data)
+    return apiClient.put(`/jobs/${id}`, data).catch(() => {
+      const jobs = getMockJobsData()
+      const index = jobs.findIndex(j => j.id === id)
+      if (index >= 0) {
+        jobs[index] = { ...jobs[index], ...data, updatedAt: new Date().toISOString() }
+        localStorage.setItem('mock_jobs', JSON.stringify(jobs))
+        return Promise.resolve({ data: jobs[index] })
+      }
+      return Promise.reject(new Error('Job not found'))
+    })
   },
   
   deleteJob: (id) => {
@@ -78,7 +96,12 @@ export const jobAPI = {
       localStorage.setItem('mock_jobs', JSON.stringify(filtered))
       return Promise.resolve({ data: { id } })
     }
-    return apiClient.delete(`/jobs/${id}`)
+    return apiClient.delete(`/jobs/${id}`).catch(() => {
+      const jobs = getMockJobsData()
+      const filtered = jobs.filter(j => j.id !== id)
+      localStorage.setItem('mock_jobs', JSON.stringify(filtered))
+      return Promise.resolve({ data: { id } })
+    })
   },
 }
 

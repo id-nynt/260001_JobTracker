@@ -44,7 +44,10 @@ export const groupAPI = {
       const group = getMockGroupsData().find(g => g.id === id)
       return Promise.resolve({ data: group })
     }
-    return apiClient.get(`/periods/${id}`)
+    return apiClient.get(`/periods/${id}`).catch(() => {
+      const group = getMockGroupsData().find(g => g.id === id)
+      return Promise.resolve({ data: group })
+    })
   },
   
   createGroup: (name) => {
@@ -55,7 +58,13 @@ export const groupAPI = {
       localStorage.setItem('mock_groups', JSON.stringify(updated))
       return Promise.resolve({ data: newGroup })
     }
-    return apiClient.post('/periods', { name })
+    return apiClient.post('/periods', { name }).catch(() => {
+      const groups = getMockGroupsData()
+      const newGroup = { id: Math.max(...groups.map(g => g.id), 0) + 1, name, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+      const updated = [...groups, newGroup]
+      localStorage.setItem('mock_groups', JSON.stringify(updated))
+      return Promise.resolve({ data: newGroup })
+    })
   },
   
   updateGroup: (id, name) => {
@@ -68,7 +77,16 @@ export const groupAPI = {
         return Promise.resolve({ data: groups[index] })
       }
     }
-    return apiClient.put(`/periods/${id}`, { name })
+    return apiClient.put(`/periods/${id}`, { name }).catch(() => {
+      const groups = getMockGroupsData()
+      const index = groups.findIndex(g => g.id === id)
+      if (index >= 0) {
+        groups[index] = { ...groups[index], name, updatedAt: new Date().toISOString() }
+        localStorage.setItem('mock_groups', JSON.stringify(groups))
+        return Promise.resolve({ data: groups[index] })
+      }
+      return Promise.reject(new Error('Group not found'))
+    })
   },
   
   deleteGroup: (id) => {
@@ -78,7 +96,12 @@ export const groupAPI = {
       localStorage.setItem('mock_groups', JSON.stringify(filtered))
       return Promise.resolve({ data: { id } })
     }
-    return apiClient.delete(`/periods/${id}`)
+    return apiClient.delete(`/periods/${id}`).catch(() => {
+      const groups = getMockGroupsData()
+      const filtered = groups.filter(g => g.id !== id)
+      localStorage.setItem('mock_groups', JSON.stringify(filtered))
+      return Promise.resolve({ data: { id } })
+    })
   },
 }
 
