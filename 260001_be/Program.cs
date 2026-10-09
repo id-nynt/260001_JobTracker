@@ -76,7 +76,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // Add DbContext (PostgreSQL)
 builder.Services.AddDbContext<JobTrackerDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(PostgresConnectionString.Normalize(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
 builder.Services.AddScoped<IPeriodService, PeriodService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();

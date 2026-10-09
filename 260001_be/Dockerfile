@@ -1,33 +1,26 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy project file
+# Restore first so this layer is cached until the project file changes
 COPY JobTracker.Api.csproj .
-
-# Restore dependencies
 RUN dotnet restore
 
-# Copy all source code
 COPY . .
-
-# Build for Release
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release -o /app/out --no-restore
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-
-# Copy published app from build stage
 COPY --from=build /app/out .
 
-# Port configuration for Render
-ENV ASPNETCORE_URLS=http://+:10000
+# Render sends traffic to port 10000 by default
+ENV ASPNETCORE_HTTP_PORTS=10000
 ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 10000
 
-# Create data directory for SQLite
-RUN mkdir -p /app/data
+# Do not run as root (the "app" user is built into the .NET 8 images)
+USER app
 
-# Start the app
-CMD ["dotnet", "JobTracker.Api.dll"]
+# Configuration (ConnectionStrings__DefaultConnection, Jwt__Secret, Cors__AllowedOrigins__0) comes from environment variables
+ENTRYPOINT ["dotnet", "JobTracker.Api.dll"]
