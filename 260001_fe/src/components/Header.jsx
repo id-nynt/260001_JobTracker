@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { authAPI } from '../api/authAPI'
 import { useTheme } from '../context/ThemeContext'
 import { MoonIcon, SunIcon } from './Icons'
 
@@ -8,7 +7,6 @@ function Header({ user, onLogout }) {
   const { isDark, toggleTheme } = useTheme()
 
   const handleLogout = () => {
-    authAPI.logout()
     onLogout()
     navigate('/login')
   }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
-import { groupAPI } from '../api/groupAPI'
+import { api, getErrorMessage } from '../api'
 import JobCard from './JobCard'
 import { ChevronRightIcon, DeleteIcon } from './Icons'
 
@@ -32,24 +32,22 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
     }
 
     try {
-      await groupAPI.updateGroup(group.id, newName)
+      await api.groups.rename(group.id, newName.trim())
       setIsEditingName(false)
       setError('')
       onRefresh()
     } catch (err) {
-      setError('Failed to update group name')
-      console.error('Error updating group:', err)
+      setError(getErrorMessage(err, 'Failed to update group name'))
     }
   }
 
   const handleDeleteGroup = async () => {
     if (window.confirm(`Delete group "${group.name}"? Jobs will move to Default group.`)) {
       try {
-        await groupAPI.deleteGroup(group.id)
+        await api.groups.remove(group.id)
         onRefresh()
       } catch (err) {
-        setError('Failed to delete group')
-        console.error('Error deleting group:', err)
+        setError(getErrorMessage(err, 'Failed to delete group'))
       }
     }
   }
@@ -85,10 +83,10 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
             <div
               onDoubleClick={(e) => {
                 e.stopPropagation()
-                setIsEditingName(true)
+                if (!group.isDefault) setIsEditingName(true)
               }}
               className="flex-1 cursor-text hover:opacity-75"
-              title="Double-click to rename"
+              title={group.isDefault ? undefined : 'Double-click to rename'}
             >
               <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-black'}`}>{group.name}</h3>
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -103,6 +101,7 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
             {jobs.length}
           </span>
           
+          {!group.isDefault && (
           <button
             onClick={handleDeleteGroup}
             title="Delete group"
@@ -110,6 +109,7 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
           >
             <DeleteIcon color={isDark ? "currentColor" : "currentColor"} size={18} />
           </button>
+          )}
         </div>
       </div>
 

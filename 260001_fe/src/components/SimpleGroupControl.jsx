@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
-import { groupAPI } from '../api/groupAPI'
+import { api, getErrorMessage } from '../api'
 
 function SimpleGroupControl({ onRefresh }) {
   const { isDark } = useTheme()
@@ -18,14 +18,13 @@ function SimpleGroupControl({ onRefresh }) {
 
     setLoading(true)
     try {
-      await groupAPI.createGroup(newGroupName)
+      await api.groups.create(newGroupName)
       setNewGroupName('')
       setShowNewGroup(false)
       setError('')
       onRefresh()
     } catch (err) {
-      setError('Failed to create group')
-      console.error('Error creating group:', err)
+      setError(getErrorMessage(err, 'Failed to create group'))
     } finally {
       setLoading(false)
     }

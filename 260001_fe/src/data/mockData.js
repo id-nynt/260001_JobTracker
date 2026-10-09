@@ -1,28 +1,33 @@
-// Mock user data
+// Demo user (no real account behind it)
 export const mockUser = {
-  id: 1,
-  email: 'test@mail.com',
-  username: 'test user',
-  token: 'mock-jwt-token-for-demo-purposes'
+  id: 0,
+  email: 'demo@example.com',
+  username: 'Demo user'
 }
 
-// Mock groups/periods
+// Demo groups. Job counts and date ranges are not stored: mockApi calculates them from the jobs,
+// the same way the backend does.
 export const mockGroups = [
   {
     id: 1,
     name: '2026_Data',
-    dateStart: '2026-01-01T00:00:00Z',
-    dateEnd: '2026-06-30T23:59:59Z',
+    isDefault: false,
     createdAt: '2026-01-15T10:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z'
   },
   {
     id: 2,
     name: '2026_Software',
-    dateStart: '2026-01-15T00:00:00Z',
-    dateEnd: '2026-12-31T23:59:59Z',
+    isDefault: false,
     createdAt: '2026-01-20T10:00:00Z',
     updatedAt: '2026-01-20T10:00:00Z'
+  },
+  {
+    id: 3,
+    name: 'Default',
+    isDefault: true,
+    createdAt: '2026-01-01T10:00:00Z',
+    updatedAt: '2026-01-01T10:00:00Z'
   }
 ]
 

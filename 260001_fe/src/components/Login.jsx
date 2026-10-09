@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authAPI } from '../api/authAPI'
+import { api, getErrorMessage, API_CONFIGURED } from '../api'
 import { useTheme } from '../context/ThemeContext'
 
-function Login({ onLoginSuccess }) {
+function Login({ onAuthenticated }) {
   const navigate = useNavigate()
   const { isDark } = useTheme()
   const [emailOrUsername, setEmailOrUsername] = useState('')
@@ -13,7 +13,7 @@ function Login({ onLoginSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!emailOrUsername || !password) {
       setError('Please fill in all fields')
       return
@@ -23,43 +23,31 @@ function Login({ onLoginSuccess }) {
     setLoading(true)
 
     try {
-      console.log('Attempting login with:', emailOrUsername)
-      const response = await authAPI.login(emailOrUsername, password)
-      console.log('Login response:', response.data)
-
-      if (response.data.success) {
-        console.log('Login successful, storing token and user')
-        authAPI.setToken(response.data.token)
-        authAPI.setUser(response.data.user)
-        
-        // Notify parent App component
-        if (onLoginSuccess) {
-          console.log('Calling onLoginSuccess callback')
-          onLoginSuccess(response.data.user, response.data.token)
-        }
-        
-        console.log('Token stored, navigating to dashboard...')
-        navigate('/dashboard', { replace: true })
-      } else {
-        const errorMsg = response.data.message || 'Login failed'
-        console.log('Login failed:', errorMsg)
-        setError(errorMsg)
-      }
+      const { token, user } = await api.auth.login(emailOrUsername, password)
+      onAuthenticated({ mode: 'api', token, user })
+      navigate('/dashboard', { replace: true })
     } catch (err) {
-      console.error('Login error details:', err)
-      console.error('Error response:', err.response?.data)
-      const errorMsg = err.response?.data?.detail || err.response?.data?.message || err.message || 'Login failed. Please try again.'
-      console.log('Setting error:', errorMsg)
-      setError(errorMsg)
+      setError(getErrorMessage(err, 'Login failed. Please try again.'))
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleDemo = () => {
+    onAuthenticated({ mode: 'demo', ...api.auth.startDemo() })
+    navigate('/dashboard', { replace: true })
   }
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'} flex items-center justify-center px-4`}>
       <div className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg shadow-lg p-8 w-full max-w-md`}>
         <h2 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-black'} mb-6 text-center`}>Login</h2>
+
+        {!API_CONFIGURED && (
+          <div className={`mb-4 p-3 ${isDark ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-900'} rounded-lg text-sm`}>
+            Accounts are not available on this site yet. Try the demo instead.
+          </div>
+        )}
 
         {error && (
           <div className={`mb-4 p-3 ${isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'} rounded-lg text-sm`}>
@@ -100,12 +88,25 @@ function Login({ onLoginSuccess }) {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !API_CONFIGURED}
             className={`w-full px-4 py-2 ${isDark ? 'bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600' : 'bg-black hover:bg-gray-800 disabled:bg-gray-400'} text-white font-medium rounded-lg transition duration-200`}
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={handleDemo}
+            className={`w-full px-4 py-2 border ${isDark ? 'border-gray-500 text-gray-200 hover:bg-gray-700' : 'border-gray-400 text-gray-800 hover:bg-gray-200'} font-medium rounded-lg transition duration-200`}
+          >
+            Try the demo (no sign-up)
+          </button>
+          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-xs text-center mt-2`}>
+            Sample data, saved only in this browser.
+          </p>
+        </div>
 
         <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-center mt-4`}>
           Don't have an account?{' '}

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect, useCallback } from 'react'
+import { Routes, Route, Navigate, Link } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import JobForm from './components/JobForm'
@@ -7,9 +7,8 @@ import GroupCard from './components/GroupCard'
 import SimpleGroupControl from './components/SimpleGroupControl'
 import Login from './components/Login'
 import Register from './components/Register'
-import { jobAPI } from './api/jobAPI'
-import { authAPI } from './api/authAPI'
-import { groupAPI } from './api/groupAPI'
+import { api, getErrorMessage } from './api'
+import { getSession, saveSession, clearSession } from './api/session'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 
 // Protected Route Component
@@ -20,76 +19,66 @@ function ProtectedRoute({ children, isAuthenticated }) {
   return children
 }
 
+function DemoBanner() {
+  const { isDark } = useTheme()
+
+  return (
+    <div className={`text-center text-sm py-2 px-4 ${isDark ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-900'}`}>
+      Demo mode: your data is stored only in this browser.{' '}
+      <Link to="/register" className="font-medium underline">Create a real account</Link>
+    </div>
+  )
+}
+
 function Dashboard() {
   const { isDark } = useTheme()
   const [groups, setGroups] = useState([])
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedGroupId, setSelectedGroupId] = useState(null)
 
-  // Fetch groups and jobs on mount
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  // `silent` refreshes keep the page on screen instead of replacing it with "Loading..."
+  const loadData = useCallback(async ({ silent = false } = {}) => {
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       setError(null)
-      const [groupsRes, jobsRes] = await Promise.all([
-        groupAPI.getGroups(),
-        jobAPI.getJobs()
-      ])
-      setGroups(groupsRes.data)
-      setJobs(jobsRes.data)
-      // Set default selected group
-      if (groupsRes.data.length > 0 && !selectedGroupId) {
-        setSelectedGroupId(groupsRes.data[0].id)
-      }
+      const [groupsData, jobsData] = await Promise.all([api.groups.list(), api.jobs.list()])
+      setGroups(groupsData)
+      setJobs(jobsData)
     } catch (err) {
-      setError('Failed to load data')
-      console.error('Error fetching data:', err)
+      setError(getErrorMessage(err, 'Failed to load data'))
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const refresh = useCallback(() => loadData({ silent: true }), [loadData])
+
+  // Runs a change, then reloads so the lists (and each group's count and dates) match the server.
+  // Returns whether it worked, so forms can keep what the user typed when it did not.
+  const applyChange = async (change, failureMessage) => {
+    try {
+      await change()
+    } catch (err) {
+      alert(getErrorMessage(err, failureMessage))
+      return false
+    }
+    await refresh()
+    return true
   }
 
-  const handleAddJob = async (newJob) => {
-    try {
-      const response = await jobAPI.createJob(newJob)
-      setJobs([response.data, ...jobs])
-      // Refresh groups to update counts and dates
-      await fetchData()
-    } catch (err) {
-      alert('Failed to create job. Please try again.')
-      console.error('Error creating job:', err)
-    }
-  }
+  const handleAddJob = (newJob) =>
+    applyChange(() => api.jobs.create(newJob), 'Failed to create job. Please try again.')
 
-  const handleDeleteJob = async (jobId) => {
-    try {
-      await jobAPI.deleteJob(jobId)
-      setJobs(jobs.filter(job => job.id !== jobId))
-      // Refresh groups to update counts and dates
-      await fetchData()
-    } catch (err) {
-      alert('Failed to delete job. Please try again.')
-      console.error('Error deleting job:', err)
-    }
-  }
+  const handleDeleteJob = (jobId) =>
+    applyChange(() => api.jobs.remove(jobId), 'Failed to delete job. Please try again.')
 
-  const handleUpdateJob = async (updatedJob) => {
-    try {
-      const response = await jobAPI.updateJob(updatedJob.id, updatedJob)
-      setJobs(jobs.map(job => job.id === updatedJob.id ? response.data : job))
-      // Refresh groups if period changed
-      await fetchData()
-    } catch (err) {
-      alert('Failed to update job. Please try again.')
-      console.error('Error updating job:', err)
-    }
-  }
+  const handleUpdateJob = (updatedJob) =>
+    applyChange(() => api.jobs.update(updatedJob.id, updatedJob), 'Failed to update job. Please try again.')
 
   if (loading) {
     return (
@@ -111,14 +100,14 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Application Form Section */}
         <div>
-          <JobForm onAddJob={handleAddJob} groups={groups} selectedGroupId={selectedGroupId} />
+          <JobForm onAddJob={handleAddJob} groups={groups} />
         </div>
 
         {/* Right Column: Applications Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>Applications</h2>
-            <SimpleGroupControl onRefresh={fetchData} />
+            <SimpleGroupControl onRefresh={refresh} />
           </div>
           {groups.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No groups found</p>
@@ -133,7 +122,7 @@ function Dashboard() {
                     jobs={groupJobs}
                     onDeleteJob={handleDeleteJob}
                     onUpdateJob={handleUpdateJob}
-                    onRefresh={fetchData}
+                    onRefresh={refresh}
                     groups={groups}
                   />
                 )
@@ -148,61 +137,39 @@ function Dashboard() {
 
 function AppContent() {
   const { isDark } = useTheme()
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [session, setSession] = useState(getSession)
 
-  // Check if user is already logged in on app load
-  useEffect(() => {
-    const storedUser = authAPI.getUser()
-    const token = authAPI.getToken()
-
-    if (storedUser && token) {
-      setUser(storedUser)
-      setIsAuthenticated(true)
-    }
-
-    setLoading(false)
-  }, [])
-
-  const handleLoginSuccess = (user, token) => {
-    console.log('App: handleLoginSuccess called with user:', user)
-    setUser(user)
-    setIsAuthenticated(true)
+  const handleAuthenticated = (newSession) => {
+    saveSession(newSession)
+    setSession(newSession)
   }
 
   const handleLogout = () => {
-    console.log('App: handleLogout called')
-    setUser(null)
-    setIsAuthenticated(false)
+    clearSession()
+    setSession(null)
   }
 
-  if (loading) {
-    return (
-      <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'} flex items-center justify-center`}>
-        <p className={isDark ? 'text-white text-xl' : 'text-black text-xl'}>Loading...</p>
-      </div>
-    )
-  }
+  const isAuthenticated = Boolean(session)
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
       <Routes>
-        <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-        <Route path="/register" element={<Register onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="/login" element={<Login onAuthenticated={handleAuthenticated} />} />
+        <Route path="/register" element={<Register onAuthenticated={handleAuthenticated} />} />
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
               <>
-                <Header user={user} onLogout={handleLogout} />
+                {session?.mode === 'demo' && <DemoBanner />}
+                <Header user={session?.user} onLogout={handleLogout} />
                 <Dashboard />
                 <Footer />
               </>
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
       </Routes>
     </div>
   )
