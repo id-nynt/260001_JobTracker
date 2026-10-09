@@ -109,7 +109,7 @@ function Login({ onAuthenticated }) {
         </div>
 
         <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-center mt-4`}>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <button
             onClick={() => navigate('/register')}
             className="text-blue-400 hover:text-blue-300 font-medium"

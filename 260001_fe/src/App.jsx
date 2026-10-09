@@ -5,11 +5,13 @@ import Footer from './components/Footer'
 import JobForm from './components/JobForm'
 import GroupCard from './components/GroupCard'
 import SimpleGroupControl from './components/SimpleGroupControl'
+import StatsPanel from './components/StatsPanel'
 import Login from './components/Login'
 import Register from './components/Register'
 import { api, getErrorMessage } from './api'
 import { getSession, saveSession, clearSession } from './api/session'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { ToastProvider, useToast } from './context/ToastContext'
 
 // Protected Route Component
 function ProtectedRoute({ children, isAuthenticated }) {
@@ -32,6 +34,7 @@ function DemoBanner() {
 
 function Dashboard() {
   const { isDark } = useTheme()
+  const { showToast } = useToast()
   const [groups, setGroups] = useState([])
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -64,7 +67,7 @@ function Dashboard() {
     try {
       await change()
     } catch (err) {
-      alert(getErrorMessage(err, failureMessage))
+      showToast(getErrorMessage(err, failureMessage))
       return false
     }
     await refresh()
@@ -95,6 +98,8 @@ function Dashboard() {
           {error}
         </div>
       )}
+
+      {jobs.length > 0 && <StatsPanel jobs={jobs} groups={groups} />}
 
       {/* Two Column Layout: Form on Left, Applications on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -178,7 +183,9 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </ThemeProvider>
   )
 }

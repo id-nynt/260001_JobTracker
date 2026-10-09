@@ -58,6 +58,16 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
       <div
         className={`p-4 cursor-pointer transition flex justify-between ${isDark ? 'hover:bg-gray-650' : 'hover:bg-gray-200'}`}
         onClick={() => setIsExpanded(!isExpanded)}
+        onKeyDown={(e) => {
+          // Only react to keys pressed on the header itself, not on the rename input or buttons inside it
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault()
+            setIsExpanded(!isExpanded)
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
       >
         <div className="flex items-center flex-1 gap-3">
           <span className={`transition flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>
@@ -105,6 +115,7 @@ function GroupCard({ group, jobs, onDeleteJob, onUpdateJob, onRefresh, groups = 
           <button
             onClick={handleDeleteGroup}
             title="Delete group"
+            aria-label={`Delete group ${group.name}`}
             className={`w-8 h-8 flex items-center justify-center rounded transition ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
           >
             <DeleteIcon color={isDark ? "currentColor" : "currentColor"} size={18} />

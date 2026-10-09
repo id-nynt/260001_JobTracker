@@ -28,6 +28,7 @@ function Header({ user, onLogout }) {
               onClick={toggleTheme}
               className={`px-3 py-2 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-400 hover:bg-gray-500'} rounded-lg transition duration-200 inline-flex items-center justify-center`}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDark ? (
                 <MoonIcon color="white" size={20} />

@@ -188,6 +188,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
             className={`w-8 h-8 flex items-center justify-center rounded transition disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
             disabled={deleting}
             title="Edit"
+            aria-label="Edit application"
           >
             <EditIcon color={isDark ? "currentColor" : "currentColor"} size={18} />
           </button>
@@ -196,6 +197,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
             className={`w-8 h-8 flex items-center justify-center rounded transition disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
             disabled={deleting}
             title="Delete"
+            aria-label="Delete application"
           >
             <DeleteIcon color={isDark ? "currentColor" : "currentColor"} size={18} />
           </button>
