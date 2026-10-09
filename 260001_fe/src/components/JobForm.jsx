@@ -3,8 +3,10 @@ import { useTheme } from '../context/ThemeContext'
 
 const STATUS_OPTIONS = ['Applied', 'Interviewing', 'Offered', 'Accepted', 'Rejected']
 
-function JobForm({ onAddJob, groups = [], selectedGroupId }) {
+function JobForm({ onAddJob, groups = [] }) {
   const { isDark } = useTheme()
+  const defaultGroupId = (groups.find(group => group.isDefault) ?? groups[0])?.id ?? null
+
   const [formData, setFormData] = useState({
     companyName: '',
     jobTitle: '',
@@ -12,44 +14,50 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
     status: 'Applied',
     dateApplied: new Date().toISOString().split('T')[0],
     notes: '',
-    periodId: selectedGroupId || (groups.length > 0 ? groups[0].id : null)
+    periodId: defaultGroupId
   })
   const [submitting, setSubmitting] = useState(false)
+
+  // The chosen group may have been deleted since it was picked
+  const periodId = groups.some(group => group.id === formData.periodId) ? formData.periodId : defaultGroupId
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      // <select> values are strings, but the API and group ids are numbers
+      [name]: name === 'periodId' ? Number(value) : value
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.companyName.trim() || !formData.jobTitle.trim()) {
       alert('Please fill in required fields')
       return
     }
 
     setSubmitting(true)
-
     try {
-      await onAddJob({
+      const added = await onAddJob({
         ...formData,
+        periodId,
         dateApplied: new Date(formData.dateApplied).toISOString()
       })
-      
-      // Reset form
-      setFormData({
-        companyName: '',
-        jobTitle: '',
-        jobUrl: '',
-        status: 'Applied',
-        dateApplied: new Date().toISOString().split('T')[0],
-        notes: '',
-        periodId: selectedGroupId || (groups.length > 0 ? groups[0].id : null)
-      })
+
+      // Keep what was typed if saving failed; after success clear it but stay on the same group
+      if (added) {
+        setFormData(prev => ({
+          ...prev,
+          companyName: '',
+          jobTitle: '',
+          jobUrl: '',
+          status: 'Applied',
+          dateApplied: new Date().toISOString().split('T')[0],
+          notes: ''
+        }))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -129,7 +137,7 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
               <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Group</label>
               <select
                 name="periodId"
-                value={formData.periodId || ''}
+                value={periodId ?? ''}
                 onChange={handleChange}
                 className="input-field"
               >
