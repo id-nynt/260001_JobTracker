@@ -18,21 +18,6 @@ namespace JobTracker.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Period entity
-            modelBuilder.Entity<Period>()
-                .HasKey(p => p.Id);
-
-            modelBuilder.Entity<Period>()
-                .Property(p => p.Name)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            modelBuilder.Entity<Period>()
-                .HasMany(p => p.JobApplications)
-                .WithOne(j => j.Period)
-                .HasForeignKey(j => j.PeriodId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // Configure User entity
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
@@ -59,9 +44,44 @@ namespace JobTracker.Api.Data
                 .Property(u => u.PasswordHash)
                 .IsRequired();
 
+            // Configure Period entity
+            modelBuilder.Entity<Period>()
+                .HasKey(p => p.Id);
+
+            modelBuilder.Entity<Period>()
+                .Property(p => p.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            // A user cannot have two periods with the same name
+            modelBuilder.Entity<Period>()
+                .HasIndex(p => new { p.UserId, p.Name })
+                .IsUnique();
+
+            modelBuilder.Entity<Period>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.Periods)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Period>()
+                .HasMany(p => p.JobApplications)
+                .WithOne(j => j.Period)
+                .HasForeignKey(j => j.PeriodId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Configure JobApplication entity
             modelBuilder.Entity<JobApplication>()
                 .HasKey(j => j.Id);
+
+            modelBuilder.Entity<JobApplication>()
+                .HasOne(j => j.User)
+                .WithMany(u => u.JobApplications)
+                .HasForeignKey(j => j.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<JobApplication>()
+                .HasIndex(j => new { j.UserId, j.PeriodId });
 
             modelBuilder.Entity<JobApplication>()
                 .Property(j => j.CompanyName)
@@ -75,6 +95,7 @@ namespace JobTracker.Api.Data
 
             modelBuilder.Entity<JobApplication>()
                 .Property(j => j.Status)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(50);
         }

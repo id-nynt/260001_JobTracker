@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace JobTracker.Api.DTOs
 {
     public class PeriodDto
@@ -5,6 +7,8 @@ namespace JobTracker.Api.DTOs
         public int Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
+
+        public bool IsDefault { get; set; }
 
         public DateTime? DateStart { get; set; }
 
@@ -19,11 +23,13 @@ namespace JobTracker.Api.DTOs
 
     public class CreatePeriodRequest
     {
+        [Required, StringLength(100)]
         public string Name { get; set; } = string.Empty;
     }
 
     public class UpdatePeriodRequest
     {
+        [Required, StringLength(100)]
         public string Name { get; set; } = string.Empty;
     }
 }

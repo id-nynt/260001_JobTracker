@@ -13,5 +13,10 @@ namespace JobTracker.Api.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation properties
+        public ICollection<Period> Periods { get; set; } = new List<Period>();
+
+        public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
     }
 }

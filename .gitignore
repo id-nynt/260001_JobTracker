@@ -33,7 +33,6 @@ launchSettings.json
 # Backend-specific ignores
 /260001_be/bin/
 /260001_be/obj/
-/260001_be/appsettings.Development.json
 
 # Frontend-specific ignores
 /260001_fe/node_modules/
