@@ -40,9 +40,9 @@ For a full-stack experience with real data storage:
 
 ```bash
 cd 260001_be
-dotnet restore
-dotnet ef database update
-dotnet run
+docker compose -f ../docker-compose.yml up -d db
+dotnet user-secrets set "Jwt:Secret" "<random string, 32+ characters>"
+dotnet run   # applies migrations on startup
 ```
 
 **Terminal 2 - Start the frontend:**
@@ -94,7 +94,7 @@ Toggle between light and dark themes with the sun/moon icon. Your preference is 
 
 - **Backend:** ASP.NET Core 8, Entity Framework Core, JWT authentication
 - **Frontend:** React 18, Vite, Tailwind CSS, Axios
-- **Database:** SQLite (development), PostgreSQL-ready for production
+- **Database:** PostgreSQL (local via Docker Compose)
 - **Mock Data:** Built-in sample data for instant demos
 
 ---
@@ -144,9 +144,9 @@ If you want to use a real database and backend:
 ```bash
 # Backend (Terminal 1)
 cd 260001_be
-dotnet restore
-dotnet ef database update
-dotnet run
+docker compose -f ../docker-compose.yml up -d db
+dotnet user-secrets set "Jwt:Secret" "<random string, 32+ characters>"
+dotnet run   # applies migrations on startup
 
 # Frontend (Terminal 2)
 cd 260001_fe
