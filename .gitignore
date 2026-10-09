@@ -51,3 +51,8 @@ launchSettings.json
 # Accessibility
 Temp/
 
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
