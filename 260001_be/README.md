@@ -1,48 +1,34 @@
-# Job Tracker Backend
+# Job Tracker API
 
-ASP.NET 8 Web API for the Job Application Tracker
+ASP.NET Core 8 Web API. Setup, API table and architecture: see the [root README](../README.md); deployment: [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md).
 
-## Features
-
-- RESTful API for managing job applications
-- Entity Framework Core with SQL Server
-- CORS enabled for frontend communication
-- Swagger documentation
-- Full CRUD operations
-
-## Prerequisites
-
-- .NET 8 SDK
-- SQL Server (LocalDB or full instance)
-
-## Setup
-
-1. Restore NuGet packages:
-   \`\`\`
-   dotnet restore
-   \`\`\`
-
-2. Create and migrate the database:
-   \`\`\`
-   dotnet ef migrations add InitialCreate
-   dotnet ef database update
-   \`\`\`
-
-3. Run the application:
-   \`\`\`
-   dotnet run
-   \`\`\`
-
-The API will be available at https://localhost:5000
-
-## API Endpoints
-
-- \`GET /api/jobs\` - Get all job applications
-- \`GET /api/jobs/{id}\` - Get a specific job application
-- \`POST /api/jobs\` - Create a new job application
-- \`PUT /api/jobs/{id}\` - Update a job application
-- \`DELETE /api/jobs/{id}\` - Delete a job application
+```bash
+dotnet user-secrets set "Jwt:Secret" "any-random-string-of-32-or-more-chars"   # once
+dotnet run                                                                       # needs PostgreSQL, see root README
+dotnet test ../260001_be.Tests
+```
 
 ## Configuration
 
-Update \`appsettings.json\` with your SQL Server connection string.
+Environment variables use `__` for nesting (`Jwt__Secret`). Nothing secret lives in the repo.
+
+| Setting | Purpose |
+| --- | --- |
+| `ConnectionStrings__DefaultConnection` | PostgreSQL: a normal connection string or a `postgresql://` URL |
+| `Jwt__Secret` | Signing key, at least 32 characters. **Required**: the app will not start without it |
+| `Jwt__Issuer`, `Jwt__Audience`, `Jwt__ExpirationMinutes` | Token settings (defaults in `appsettings.json`) |
+| `Cors__AllowedOrigins__0`, `__1`, … | Frontend origins allowed to call the API |
+| `RateLimiting__AuthPermitLimit` | Login/register attempts per IP per minute (default 10) |
+
+## Layout
+
+`Controllers/` HTTP endpoints, thin and scoped to the signed-in user · `Models/` entities with their own validation (`JobApplication.Create`) · `DTOs/` request/response shapes · `Services/` token creation and group bookkeeping · `Infrastructure/` error handling and connection-string parsing · `Migrations/` EF Core schema.
+
+## Migrations
+
+```bash
+dotnet tool restore                                  # installs the pinned dotnet-ef
+dotnet ef migrations add <Name>                      # after changing a model
+```
+
+Migrations are applied automatically when the API starts.

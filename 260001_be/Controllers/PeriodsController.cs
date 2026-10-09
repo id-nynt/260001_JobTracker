@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using JobTracker.Api.Data;
 using JobTracker.Api.DTOs;
-using JobTracker.Api.Models;
+using JobTracker.Api.Extensions;
 using JobTracker.Api.Mappers;
+using JobTracker.Api.Models;
+using JobTracker.Api.Services;
 
 namespace JobTracker.Api.Controllers
 {
@@ -14,193 +16,152 @@ namespace JobTracker.Api.Controllers
     public class PeriodsController : ControllerBase
     {
         private readonly JobTrackerDbContext _context;
-        private readonly ILogger<PeriodsController> _logger;
+        private readonly IPeriodService _periods;
 
-        public PeriodsController(JobTrackerDbContext context, ILogger<PeriodsController> logger)
+        public PeriodsController(JobTrackerDbContext context, IPeriodService periods)
         {
             _context = context;
-            _logger = logger;
+            _periods = periods;
         }
 
         // GET: api/periods
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PeriodDto>>> GetPeriods()
         {
-            try
-            {
-                var periods = await _context.Periods
-                    .OrderByDescending(p => p.CreatedAt)
-                    .ToListAsync();
+            var userId = User.GetUserId();
 
-                return Ok(PeriodMapper.ToDtos(periods));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving periods");
-                return StatusCode(500, "An error occurred while retrieving periods");
-            }
+            var periods = await _context.Periods
+                .AsNoTracking()
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(PeriodMapper.Projection)
+                .ToListAsync();
+
+            return Ok(periods);
         }
 
         // GET: api/periods/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<PeriodDto>> GetPeriod(int id)
         {
-            try
-            {
-                var period = await _context.Periods
-                    .Include(p => p.JobApplications)
-                    .FirstOrDefaultAsync(p => p.Id == id);
+            var userId = User.GetUserId();
 
-                if (period == null)
-                {
-                    return NotFound("Period not found");
-                }
+            var period = await _context.Periods
+                .AsNoTracking()
+                .Where(p => p.Id == id && p.UserId == userId)
+                .Select(PeriodMapper.Projection)
+                .FirstOrDefaultAsync();
 
-                return Ok(PeriodMapper.ToDto(period));
-            }
-            catch (Exception ex)
+            if (period == null)
             {
-                _logger.LogError(ex, "Error retrieving period");
-                return StatusCode(500, "An error occurred while retrieving period");
+                return NotFound("Period not found");
             }
+
+            return Ok(period);
         }
 
         // POST: api/periods
         [HttpPost]
         public async Task<ActionResult<PeriodDto>> CreatePeriod([FromBody] CreatePeriodRequest request)
         {
-            try
+            var userId = User.GetUserId();
+            var name = request.Name.Trim();
+
+            if (string.IsNullOrEmpty(name))
             {
-                if (string.IsNullOrWhiteSpace(request.Name))
-                {
-                    return BadRequest("Period name is required");
-                }
-
-                var period = new Period
-                {
-                    Name = request.Name,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                _context.Periods.Add(period);
-                await _context.SaveChangesAsync();
-
-                var dto = new PeriodDto
-                {
-                    Id = period.Id,
-                    Name = period.Name,
-                    DateStart = period.DateStart,
-                    DateEnd = period.DateEnd,
-                    Count = 0,
-                    CreatedAt = period.CreatedAt,
-                    UpdatedAt = period.UpdatedAt
-                };
-
-                return CreatedAtAction(nameof(GetPeriod), new { id = period.Id }, dto);
+                return Problem(detail: "Period name is required", statusCode: StatusCodes.Status400BadRequest);
             }
-            catch (Exception ex)
+
+            if (await _context.Periods.AnyAsync(p => p.UserId == userId && p.Name == name))
             {
-                _logger.LogError(ex, "Error creating period");
-                return StatusCode(500, "An error occurred while creating period");
+                return Problem(detail: "A period with this name already exists", statusCode: StatusCodes.Status409Conflict);
             }
+
+            var period = new Period { UserId = userId, Name = name };
+
+            _context.Periods.Add(period);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetPeriod), new { id = period.Id }, PeriodMapper.ToDto(period, 0));
         }
 
         // PUT: api/periods/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<PeriodDto>> UpdatePeriod(int id, [FromBody] UpdatePeriodRequest request)
         {
-            try
+            var userId = User.GetUserId();
+            var name = request.Name.Trim();
+
+            var period = await _context.Periods
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (period == null)
             {
-                var period = await _context.Periods.FindAsync(id);
-
-                if (period == null)
-                {
-                    return NotFound("Period not found");
-                }
-
-                if (string.IsNullOrWhiteSpace(request.Name))
-                {
-                    return BadRequest("Period name is required");
-                }
-
-                period.Name = request.Name;
-                period.UpdatedAt = DateTime.UtcNow;
-
-                _context.Periods.Update(period);
-                await _context.SaveChangesAsync();
-
-                var jobs = await _context.JobApplications
-                    .Where(j => j.PeriodId == id)
-                    .ToListAsync();
-
-                var dto = new PeriodDto
-                {
-                    Id = period.Id,
-                    Name = period.Name,
-                    DateStart = period.DateStart,
-                    DateEnd = period.DateEnd,
-                    Count = jobs.Count,
-                    CreatedAt = period.CreatedAt,
-                    UpdatedAt = period.UpdatedAt
-                };
-
-                return Ok(dto);
+                return NotFound("Period not found");
             }
-            catch (Exception ex)
+
+            if (string.IsNullOrEmpty(name))
             {
-                _logger.LogError(ex, "Error updating period");
-                return StatusCode(500, "An error occurred while updating period");
+                return Problem(detail: "Period name is required", statusCode: StatusCodes.Status400BadRequest);
             }
+
+            if (period.IsDefault && name != period.Name)
+            {
+                return Problem(detail: "The default period cannot be renamed", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (await _context.Periods.AnyAsync(p => p.UserId == userId && p.Name == name && p.Id != id))
+            {
+                return Problem(detail: "A period with this name already exists", statusCode: StatusCodes.Status409Conflict);
+            }
+
+            period.Name = name;
+            period.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var count = await _context.JobApplications.CountAsync(j => j.PeriodId == id && j.UserId == userId);
+
+            return Ok(PeriodMapper.ToDto(period, count));
         }
 
         // DELETE: api/periods/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePeriod(int id)
         {
-            try
+            var userId = User.GetUserId();
+
+            var period = await _context.Periods
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (period == null)
             {
-                var period = await _context.Periods.FindAsync(id);
-
-                if (period == null)
-                {
-                    return NotFound("Period not found");
-                }
-
-                // Check if this is the default period
-                if (period.Name == "Default")
-                {
-                    return BadRequest("Cannot delete the default period");
-                }
-
-                // Move all jobs from this period to default period
-                var defaultPeriod = await _context.Periods
-                    .FirstOrDefaultAsync(p => p.Name == "Default");
-
-                if (defaultPeriod != null)
-                {
-                    var jobsToMove = await _context.JobApplications
-                        .Where(j => j.PeriodId == id)
-                        .ToListAsync();
-
-                    foreach (var job in jobsToMove)
-                    {
-                        job.PeriodId = defaultPeriod.Id;
-                    }
-
-                    _context.JobApplications.UpdateRange(jobsToMove);
-                }
-
-                _context.Periods.Remove(period);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
+                return NotFound("Period not found");
             }
-            catch (Exception ex)
+
+            if (period.IsDefault)
             {
-                _logger.LogError(ex, "Error deleting period");
-                return StatusCode(500, "An error occurred while deleting period");
+                return Problem(detail: "Cannot delete the default period", statusCode: StatusCodes.Status400BadRequest);
             }
+
+            // Move all jobs from this period to the user's default period
+            var defaultPeriod = await _periods.GetDefaultAsync(userId);
+
+            var jobsToMove = await _context.JobApplications
+                .Where(j => j.PeriodId == id && j.UserId == userId)
+                .ToListAsync();
+
+            foreach (var job in jobsToMove)
+            {
+                job.ChangePeriod(defaultPeriod.Id);
+            }
+
+            _context.Periods.Remove(period);
+            await _context.SaveChangesAsync();
+
+            await _periods.RefreshDatesAsync(userId, defaultPeriod.Id);
+
+            return NoContent();
         }
     }
 }

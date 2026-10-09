@@ -1,0 +1,17 @@
+# Render blueprint: https://render.com/docs/blueprint-spec
+# Create the database first (see docs/DEPLOYMENT.md), then "New > Blueprint" and point it at this repo.
+services:
+  - type: web
+    name: job-tracker-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./260001_be/Dockerfile
+    dockerContext: ./260001_be
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        sync: false            # paste the Postgres URL from Neon/Supabase
+      - key: Jwt__Secret
+        generateValue: true    # Render generates a random secret
+      - key: Cors__AllowedOrigins__0
+        sync: false            # your Vercel URL, e.g. https://job-tracker.vercel.app

@@ -8,7 +8,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 text-center">
         {/* Connect Section */}
         <div className="mb-2">
-          <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'} mb-2`}>📫 Let's Connect</h3>
+          <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'} mb-2`}>📫 Let&apos;s Connect</h3>
           <div className={`flex flex-wrap items-center justify-center gap-2 ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm`}>
             <a href="mailto:id.tnyennhi@gmail.com" className={`${isDark ? 'hover:text-white' : 'hover:text-black'} transition`}>
               📧 id.tnyennhi@gmail.com

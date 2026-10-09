@@ -6,21 +6,6 @@ namespace JobTracker.Api.Mappers
     public static class JobApplicationMapper
     {
         /// <summary>
-        /// Maps a CreateJobApplicationDto to a JobApplication entity using the factory method.
-        /// </summary>
-        public static JobApplication CreateFromDto(CreateJobApplicationDto dto, int periodId)
-        {
-            return JobApplication.Create(
-                dto.CompanyName,
-                dto.JobTitle,
-                dto.JobUrl,
-                periodId,
-                dto.DateApplied,
-                dto.Notes
-            );
-        }
-
-        /// <summary>
         /// Maps a JobApplication entity to a JobApplicationDto for API responses.
         /// </summary>
         public static JobApplicationDto ToDto(JobApplication entity)

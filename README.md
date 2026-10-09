@@ -1,323 +1,111 @@
-# Job Tracker Application
+# Job Tracker
 
-A clean, simple web application to organize and track your job applications. Keep everything in one place—apply, interview, get offered, get rejected. It all goes here.
+[![CI](https://github.com/id-nynt/260001_JobTracker/actions/workflows/ci.yml/badge.svg)](https://github.com/id-nynt/260001_JobTracker/actions/workflows/ci.yml)
+![.NET 8](https://img.shields.io/badge/.NET-8-512BD4)
+![React 18](https://img.shields.io/badge/React-18-61DAFB)
+![License MIT](https://img.shields.io/badge/license-MIT-green)
 
-Perfect for job seekers managing multiple applications across different companies or roles.
+A full-stack web app for tracking job applications from **Applied** to **Offer**, organised into job-search groups, with an overview of response, interview and offer rates.
 
-## What It Does
+**Live demo:** _add your Vercel URL here_ &nbsp;·&nbsp; click **Try the demo (no sign-up)** to explore with sample data.
 
-- 📝 **Add job applications** - Company, title, date applied, and notes
-- 📊 **Organize by groups** - Create custom job search "periods" (e.g., "2026_Tech", "2026_Data")
-- 🏷️ **Track status** - Mark applications as Applied, Interviewing, Offered, Accepted, or Rejected
-- 🎨 **Dark/Light mode** - Easy on the eyes, day or night
-- 📱 **Works anywhere** - Responsive design for desktop, tablet, and mobile
-- 🚀 **Try instantly** - Comes with mock data—no setup required
+<!-- Add a short GIF or screenshot here: add a job, change its status, watch the overview update. Save it as docs/demo.gif and embed with ![demo](docs/demo.gif) -->
 
-## Quick Start
+## Highlights
 
-### Try It Right Now (2 minutes)
+- **Real accounts with private data**: JWT login, BCrypt-hashed passwords, and every query scoped to the signed-in user. Another user's record answers `404`, as if it did not exist. Automated tests prove it.
+- **Two modes, one UI**: real accounts talk to the API; the demo runs on sample data in the browser through a second implementation of the same interface that follows the same rules (default group, unique names, calculated counts and dates).
+- **Production-minded backend**: ASP.NET Core 8, EF Core + PostgreSQL, validated input, uniform `ProblemDetails` errors, rate-limited auth, restricted CORS, health check, non-root Docker image. The app refuses to start without a real JWT secret.
+- **Tested where it matters**: 32 backend and 20 frontend tests, every one checked by deliberately breaking the code to see it fail. CI runs them on every push.
+- **Overview dashboard**: response, interview and offer rates and a weekly activity chart, computed by a small pure function with tests.
 
-Just want to see it in action? The app includes sample data so you can explore immediately:
+## Architecture
 
-```bash
-cd 260001_fe
-npm install
-npm run dev
+```mermaid
+flowchart LR
+  B[Browser] --> V["Vercel: React + Vite + Tailwind"]
+  V -->|"/api (JWT)"| R["Render: ASP.NET Core 8 API (Docker)"]
+  R --> N[("Neon: PostgreSQL")]
+  V -.->|"demo mode: localStorage only"| B
 ```
 
-Visit `http://localhost:3000` and login with:
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 18, Vite, React Router, Tailwind CSS, Axios, Vitest + Testing Library, ESLint |
+| Backend | ASP.NET Core 8 Web API, EF Core 8, Npgsql, JWT bearer, BCrypt, Swagger, xUnit + FluentAssertions |
+| Data | PostgreSQL (Neon in production, Docker locally) |
+| Delivery | Docker, GitHub Actions CI, Vercel (frontend), Render (API) |
 
-- **Email:** `test@mail.com`
-- **Password:** `jobtracker@janny`
+## Run it locally
 
-You'll see 10 sample job applications already loaded in the system.
-
-### Run with Backend (5 minutes)
-
-For a full-stack experience with real data storage:
-
-**Terminal 1 - Start the backend:**
+Requirements: Node 20+, .NET 8 SDK, Docker (for PostgreSQL).
 
 ```bash
+# 1. Database
+docker run -d --name jobtracker-db -e POSTGRES_DB=jobtracker -e POSTGRES_USER=jobtracker \
+  -e POSTGRES_PASSWORD=jobtracker -p 5432:5432 postgres:16      # or: docker compose up -d db
+
+# 2. API  (http://localhost:5000/swagger)
 cd 260001_be
-dotnet restore
-dotnet ef database update
-dotnet run
-```
+dotnet user-secrets set "Jwt:Secret" "any-random-string-of-32-or-more-chars"
+dotnet run                                                      # applies migrations on startup
 
-**Terminal 2 - Start the frontend:**
-
-```bash
-cd 260001_fe
+# 3. Frontend  (http://localhost:3000)
+cd ../260001_fe
 npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000` and register a new account.
-
----
-
-## Features in Detail
-
-### 📋 Job Application Management
-
-- **Add** new applications with company, job title, date, and notes
-- **Edit** applications to update status or add interview feedback
-- **Delete** applications when you want to clean up
-- **Organize** by custom groups (recruiting periods, company types, etc.)
-
-### 🏷️ Status Tracking
-
-Track each application through its lifecycle:
-
-| Status           | Color  | Meaning                               |
-| ---------------- | ------ | ------------------------------------- |
-| **Applied**      | Blue   | Just submitted the application        |
-| **Interviewing** | Yellow | In the interview process              |
-| **Offered**      | Teal   | Got an offer!                         |
-| **Accepted**     | Green  | You accepted—you're going!            |
-| **Rejected**     | Red    | Didn't work out (note for next time!) |
-
-### 🌙 Dark Mode
-
-Toggle between light and dark themes with the sun/moon icon. Your preference is saved automatically.
-
-### 📱 Responsive Design
-
-- Full-featured on desktop
-- Mobile-friendly interface
-- Touch-friendly buttons and forms
-
----
-
-## Tech Stack
-
-- **Backend:** ASP.NET Core 8, Entity Framework Core, JWT authentication
-- **Frontend:** React 18, Vite, Tailwind CSS, Axios
-- **Database:** SQLite (development), PostgreSQL-ready for production
-- **Mock Data:** Built-in sample data for instant demos
-
----
-
-## Sample Data Included
-
-Login with the pre-loaded test account to see it in action:
-
-**Email:** `test@mail.com`  
-**Password:** `jobtracker@janny`
-
-You'll see:
-
-- 2 job search periods (2026_Data, 2026_Software)
-- 10 realistic job applications
-- All 5 status types represented
-- Genuine notes explaining each application's status
-
-All data is stored in your browser's local storage—no backend required to try it.
-
----
-
-## Installation
-
-### Requirements
-
-- **Node.js** 16+ ([Download](https://nodejs.org))
-- **.NET 8.0+** ([Download](https://dotnet.microsoft.com/download)) - _optional, only if running backend_
-- **Git** ([Download](https://git-scm.com))
-
-### Frontend Only
-
-Perfect if you just want to see the app in action:
+No backend needed to look around: start only the frontend and use **Try the demo**.
 
 ```bash
-cd 260001_fe
-npm install
-npm run dev
+dotnet test 260001_be.Tests        # backend: integration + domain tests (in-memory SQLite)
+cd 260001_fe && npm test           # frontend tests
+cd 260001_fe && npm run lint
 ```
 
-App runs at `http://localhost:3000`
+## API
 
-### Full Stack (Frontend + Backend)
+All endpoints except `auth/*` and `/health` require `Authorization: Bearer <token>`. Interactive docs: `/swagger`.
 
-If you want to use a real database and backend:
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/auth/register`, `/api/auth/login` | Create an account / sign in (returns a JWT) |
+| GET, POST | `/api/jobs` | List / create applications |
+| GET, PUT, DELETE | `/api/jobs/{id}` | Read / update / delete one application |
+| GET, POST | `/api/periods` | List / create groups (with job count and date range) |
+| GET, PUT, DELETE | `/api/periods/{id}` | Read / rename / delete a group (its jobs move to *Default*) |
+| GET | `/health` | Liveness check |
 
-```bash
-# Backend (Terminal 1)
-cd 260001_be
-dotnet restore
-dotnet ef database update
-dotnet run
-
-# Frontend (Terminal 2)
-cd 260001_fe
-npm install
-npm run dev
-```
-
-- **Frontend:** `http://localhost:3000`
-- **Backend API:** `http://localhost:5000`
-- **Swagger Docs:** `http://localhost:5000/swagger`
-
----
-
-## How to Use
-
-### Adding an Application
-
-1. Fill in the form on the left:
-   - Company Name
-   - Job Title
-   - Date Applied
-   - Status
-   - Any notes about the role
-2. Click "Add Application"
-3. Your application appears in the list
-
-### Organizing by Groups
-
-1. Applications are grouped by "job search periods"
-2. Click a group to expand/collapse it
-3. Create new groups or rename existing ones by clicking on the group title
-
-### Editing & Deleting
-
-- **Edit:** Click the pencil icon on any application
-- **Delete:** Click the X icon (confirmations prevent accidents)
-
-### Switching Themes
-
-Click the sun/moon icon in the top-right corner to toggle dark mode.
-
----
-
-## Project Structure
+## Project structure
 
 ```
-260001_Job_Tracker/
-├── 260001_be/                 # Backend (ASP.NET Core 8)
-│   ├── Controllers/           # API endpoints
-│   ├── Models/                # Database models
-│   ├── Data/                  # Database context
-│   ├── Migrations/            # Database schema
-│   ├── DTOs/                  # Data transfer objects
-│   └── Program.cs             # API setup
-│
-├── 260001_fe/                 # Frontend (React + Vite)
-│   ├── src/
-│   │   ├── components/        # React components
-│   │   ├── api/               # API client
-│   │   ├── data/              # Mock data
-│   │   └── styles/            # Tailwind CSS
-│   ├── package.json           # Dependencies
-│   └── vite.config.js         # Build config
-│
-└── README.md                   # This file
+260001_be/           ASP.NET Core API (Controllers, Models, DTOs, Services, Data, Migrations)
+260001_be.Tests/     xUnit tests: Api/ (HTTP, in memory) and Domain/
+260001_fe/           React app (src/api = real + demo implementations, src/components, src/utils)
+docs/                Deployment guide, build-from-scratch guide, audit and fix plan
+.github/workflows/   CI
 ```
 
----
+## Design decisions and trade-offs
 
-## API Overview
+- **`404`, not `403`, for other users' data.** A `403` would confirm the record exists. Every query filters on the user id from the token, so there is no "forgot to check" path to leak data.
+- **Demo mode is a second implementation, not a fallback.** An earlier version silently fell back to sample data whenever the API failed, which meant a wrong password still "logged you in". Now the mode is an explicit choice made at login, and API errors always reach the user.
+- **Stats are computed in the browser.** One tested function serves both modes. With thousands of applications per user this would move to a server-side query.
+- **Backend tests use in-memory SQLite, not PostgreSQL.** They run anywhere without Docker and exercise the real controllers, auth and validation; the trade-off is that provider-specific SQL differences are not covered.
+- **Token in `localStorage`.** Simple and fine for a demo-scale app, but readable by injected scripts. The next step would be an `httpOnly` cookie with a refresh token.
+- **Free hosting sleeps.** The first request after idle can take ~30 s; the login page wakes the API early and says so, and the demo avoids the problem entirely.
 
-**Backend endpoints:**
+## More
 
-```
-Authentication:
-  POST /api/auth/register    - Create account
-  POST /api/auth/login       - Login
+- [Deployment guide](docs/DEPLOYMENT.md): Neon + Render + Vercel, step by step
+- [Build it from scratch](docs/BUILD_FROM_SCRATCH_GUIDE.md): the process behind this project, written for beginners
+- [Portfolio audit](docs/PORTFOLIO_AUDIT.md) and [fix plan](docs/FIX_PLAN.md): what was wrong, and how it was fixed
 
-Job Applications:
-  GET    /api/jobs           - List all applications
-  POST   /api/jobs           - Add application
-  PUT    /api/jobs/{id}      - Update application
-  DELETE /api/jobs/{id}      - Delete application
+## Roadmap
 
-Groups:
-  GET    /api/periods        - List groups
-  POST   /api/periods        - Create group
-  PUT    /api/periods/{id}   - Update group
-  DELETE /api/periods/{id}   - Delete group
-```
+Search and filter, CSV export, a status-history timeline, Playwright end-to-end tests, `httpOnly` cookie auth.
 
-See Swagger UI at `http://localhost:5000/swagger` when running the backend.
+## License
 
----
-
-## Troubleshooting
-
-### "Port already in use"
-
-Something is already using port 3000 or 5000. Either close that application or change the port in the config.
-
-### "Cannot find module" error
-
-```bash
-cd 260001_fe
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
-
-### "Database file not found" error
-
-The database is created automatically on first run:
-
-```bash
-cd 260001_be
-$env:ASPNETCORE_ENVIRONMENT="Development"
-dotnet ef database update
-dotnet run
-```
-
-### ".NET version error"
-
-Check your version:
-
-```bash
-dotnet --version  # Must be 8.0 or higher
-```
-
----
-
-## Deployment
-
-The frontend can be deployed for free to **Vercel**, **Netlify**, **GitHub Pages**, or any static hosting:
-
-1. Build: `cd 260001_fe && npm run build`
-2. Upload the `dist/` folder to your hosting provider
-3. Done!
-
----
-
-## Customization
-
-The codebase is clean and straightforward:
-
-- **Add new statuses** - Edit `JobForm.jsx` and `JobCard.jsx`
-- **Change colors** - Modify Tailwind config or CSS
-- **Add fields** - Update database models and API
-- **Change theme colors** - Edit `ThemeContext.jsx`
-
----
-
-## Contributing
-
-Found a bug or have an idea? Feel free to:
-
-1. Fork this repo
-2. Create a feature branch
-3. Submit a pull request
-
----
-
-## Questions?
-
-- **How do I export my data?** - Data is stored in your browser (localStorage) or database. You can download it manually or copy from the UI.
-- **Is my data secure?** - If running locally, yes (it's on your machine). In production, use HTTPS and secure authentication.
-- **Can I run this offline?** - Frontend runs completely offline with mock data enabled.
-- **Can multiple people use this?** - Yes! Deploy the backend and multiple users can login with their own accounts.
-
----
-
-**Happy job hunting!** 🎯
-
-Last Updated: March 2026
+[MIT](LICENSE)

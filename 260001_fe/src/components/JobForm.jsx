@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
+import { useToast } from '../context/ToastContext'
 
 const STATUS_OPTIONS = ['Applied', 'Interviewing', 'Offered', 'Accepted', 'Rejected']
 
-function JobForm({ onAddJob, groups = [], selectedGroupId }) {
+function JobForm({ onAddJob, groups = [] }) {
   const { isDark } = useTheme()
+  const { showToast } = useToast()
+  const defaultGroupId = (groups.find(group => group.isDefault) ?? groups[0])?.id ?? null
+
   const [formData, setFormData] = useState({
     companyName: '',
     jobTitle: '',
@@ -12,44 +16,50 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
     status: 'Applied',
     dateApplied: new Date().toISOString().split('T')[0],
     notes: '',
-    periodId: selectedGroupId || (groups.length > 0 ? groups[0].id : null)
+    periodId: defaultGroupId
   })
   const [submitting, setSubmitting] = useState(false)
+
+  // The chosen group may have been deleted since it was picked
+  const periodId = groups.some(group => group.id === formData.periodId) ? formData.periodId : defaultGroupId
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      // <select> values are strings, but the API and group ids are numbers
+      [name]: name === 'periodId' ? Number(value) : value
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.companyName.trim() || !formData.jobTitle.trim()) {
-      alert('Please fill in required fields')
+      showToast('Please fill in the company name and job title')
       return
     }
 
     setSubmitting(true)
-
     try {
-      await onAddJob({
+      const added = await onAddJob({
         ...formData,
+        periodId,
         dateApplied: new Date(formData.dateApplied).toISOString()
       })
-      
-      // Reset form
-      setFormData({
-        companyName: '',
-        jobTitle: '',
-        jobUrl: '',
-        status: 'Applied',
-        dateApplied: new Date().toISOString().split('T')[0],
-        notes: '',
-        periodId: selectedGroupId || (groups.length > 0 ? groups[0].id : null)
-      })
+
+      // Keep what was typed if saving failed; after success clear it but stay on the same group
+      if (added) {
+        setFormData(prev => ({
+          ...prev,
+          companyName: '',
+          jobTitle: '',
+          jobUrl: '',
+          status: 'Applied',
+          dateApplied: new Date().toISOString().split('T')[0],
+          notes: ''
+        }))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -61,9 +71,10 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Company Name *</label>
+            <label htmlFor="job-companyName" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Company Name *</label>
             <input
               type="text"
+              id="job-companyName"
               name="companyName"
               value={formData.companyName}
               onChange={handleChange}
@@ -73,9 +84,10 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
             />
           </div>
           <div>
-            <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Job Title *</label>
+            <label htmlFor="job-jobTitle" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Job Title *</label>
             <input
               type="text"
+              id="job-jobTitle"
               name="jobTitle"
               value={formData.jobTitle}
               onChange={handleChange}
@@ -88,9 +100,10 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Job URL</label>
+            <label htmlFor="job-jobUrl" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Job URL</label>
             <input
               type="url"
+              id="job-jobUrl"
               name="jobUrl"
               value={formData.jobUrl}
               onChange={handleChange}
@@ -99,9 +112,10 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
             />
           </div>
           <div>
-            <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Date Applied</label>
+            <label htmlFor="job-dateApplied" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Date Applied</label>
             <input
               type="date"
+              id="job-dateApplied"
               name="dateApplied"
               value={formData.dateApplied}
               onChange={handleChange}
@@ -112,8 +126,9 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Status</label>
+            <label htmlFor="job-status" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Status</label>
             <select
+              id="job-status"
               name="status"
               value={formData.status}
               onChange={handleChange}
@@ -126,10 +141,11 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
           </div>
           {groups.length > 0 && (
             <div>
-              <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Group</label>
+              <label htmlFor="job-periodId" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Group</label>
               <select
+                id="job-periodId"
                 name="periodId"
-                value={formData.periodId || ''}
+                value={periodId ?? ''}
                 onChange={handleChange}
                 className="input-field"
               >
@@ -142,8 +158,9 @@ function JobForm({ onAddJob, groups = [], selectedGroupId }) {
         </div>
 
         <div>
-          <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Notes</label>
+          <label htmlFor="job-notes" className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium mb-2`}>Notes</label>
           <textarea
+            id="job-notes"
             name="notes"
             value={formData.notes}
             onChange={handleChange}

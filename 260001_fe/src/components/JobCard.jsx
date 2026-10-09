@@ -23,6 +23,8 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
   }
 
   const handleEdit = () => {
+    // Start from the latest saved values, not from whatever was loaded when the card first rendered
+    setEditData(job)
     setIsEditing(true)
   }
 
@@ -35,15 +37,16 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
     const { name, value } = e.target
     setEditData(prev => ({
       ...prev,
-      [name]: value
+      // <select> values are strings, but group ids are numbers
+      [name]: name === 'periodId' ? Number(value) : value
     }))
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await onUpdate(editData)
-      setIsEditing(false)
+      const saved = await onUpdate(editData)
+      if (saved) setIsEditing(false)
     } finally {
       setSaving(false)
     }
@@ -114,7 +117,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
                 <label className={`block font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>Group</label>
                 <select
                   name="periodId"
-                  value={editData.periodId || ''}
+                  value={editData.periodId ?? ''}
                   onChange={handleChange}
                   className="input-field"
                 >
@@ -130,7 +133,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
             <label className={`block font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>Notes</label>
             <textarea
               name="notes"
-              value={editData.notes}
+              value={editData.notes ?? ''}
               onChange={handleChange}
               rows="3"
               className="input-field"
@@ -185,6 +188,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
             className={`w-8 h-8 flex items-center justify-center rounded transition disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
             disabled={deleting}
             title="Edit"
+            aria-label="Edit application"
           >
             <EditIcon color={isDark ? "currentColor" : "currentColor"} size={18} />
           </button>
@@ -193,6 +197,7 @@ function JobCard({ job, onDelete, onUpdate, groups = [] }) {
             className={`w-8 h-8 flex items-center justify-center rounded transition disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
             disabled={deleting}
             title="Delete"
+            aria-label="Delete application"
           >
             <DeleteIcon color={isDark ? "currentColor" : "currentColor"} size={18} />
           </button>
