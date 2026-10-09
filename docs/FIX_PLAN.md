@@ -277,7 +277,7 @@ Be ready to explain these out loud in 1–2 minutes each:
 - [x] Phase 1: Backend per-user data, security, correctness (verified by manual API testing; automated tests come in Phase 2)
 - [x] Phase 2: Backend tests (18 test methods, 29 cases; mutation-checked)
 - [x] Phase 3: Frontend API layer, demo mode, bug fixes (verified with scripts against the demo store and live backend; no browser run)
-- [ ] Phase 4: Frontend tests, lint, polish
-- [ ] Phase 5: Backend deployed + CI green
-- [ ] Phase 6: Stats dashboard
-- [ ] Phase 7: README & presentation
+- [x] Phase 4: Frontend tests, lint, polish (20 tests, ESLint, toasts, accessibility. Skipped: Tailwind `dark:` refactor and Prettier, judged not worth the cost)
+- [x] Phase 5: Deploy-ready backend + CI (Docker image verified locally, Render blueprint, `docs/DEPLOYMENT.md`, workflow added. **Manual:** create the accounts, deploy, and confirm CI is green on GitHub)
+- [x] Phase 6: Stats dashboard (computed client-side by a tested pure function instead of a new endpoint)
+- [x] Phase 7: README & presentation (**Manual:** live demo URL and a demo GIF/screenshot)

@@ -1,35 +1,26 @@
-# Job Tracker Frontend
+# Job Tracker frontend
 
-React + Tailwind CSS frontend for the Job Application Tracker
+React 18 + Vite + Tailwind CSS. Overview and setup: see the [root README](../README.md).
 
-## Features
+```bash
+npm install
+npm run dev      # http://localhost:3000, proxies /api to http://localhost:5000
+npm test         # Vitest + Testing Library
+npm run lint
+npm run build
+```
 
-- Add, edit, and delete job applications
-- Track application status (Applied, Interview, Offer, Rejected, Accepted)
-- Simple and clean ChatGPT-style UI
-- Statistics dashboard showing application progress
+## How it is organised
 
-## Setup
+| Path | Role |
+| --- | --- |
+| `src/api/client.js` | One Axios instance, auth header, 401 handling, `getErrorMessage` |
+| `src/api/httpApi.js` | Real backend calls. Errors are thrown, never swallowed |
+| `src/api/mockApi.js` | Demo implementation with the same methods and rules, backed by `localStorage` |
+| `src/api/index.js` | `api` object that picks demo or real per call, based on the session |
+| `src/components/` | UI components |
+| `src/utils/stats.js` | Rates and weekly counts (pure, tested) |
 
-1. Install dependencies:
-   \`\`\`
-   npm install
-   \`\`\`
+## Environment
 
-2. Start development server:
-   \`\`\`
-   npm run dev
-   \`\`\`
-
-3. Build for production:
-   \`\`\`
-   npm run build
-   \`\`\`
-
-The app will be available at http://localhost:3000
-
-## Project Structure
-
-- \`src/components/\` - React components
-- \`src/api/\` - API integration
-- \`src/styles/\` - Tailwind CSS setup
+`VITE_API_URL`: base URL of the API, e.g. `https://my-api.onrender.com/api`. Leave it unset in development (the Vite proxy is used). It is baked in at **build** time; without it a production build offers only the demo.

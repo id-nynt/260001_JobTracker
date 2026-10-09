@@ -2,6 +2,20 @@
 
 _Audit date: 9 Oct 2026 · Scope: full repo at commit `a2558f9` (`260001_be/`, `260001_fe/`, root config)_
 
+
+> **Status update.** This audit is a snapshot taken *before* the fixes; paths in it are relative to the repo root. Everything below was addressed except where noted. See [FIX_PLAN.md](FIX_PLAN.md).
+>
+> | Item | Status |
+> | --- | --- |
+> | 3.1 per-user data | Fixed and covered by isolation tests |
+> | 3.2 silent mock login, 3.3 `periodId` bug | Fixed, with regression tests |
+> | 3.4 secrets and data in git | Secret now required from configuration; `.db` files and `Temp/` untracked. The old secret remains in git history, so never use it anywhere |
+> | 3.5 tests, 3.19 CI and lint | 32 backend + 20 frontend tests, ESLint, GitHub Actions. No Prettier |
+> | 3.6 backend not deployed | Deploy-ready (Docker image verified, Render blueprint, guide). The deployment itself is manual |
+> | 3.7-3.17, 3.20 | Fixed |
+> | 3.18 `alert()` and theme ternaries | `alert()` replaced by toasts. The `isDark ? … : …` pattern is still used (a Tailwind `dark:` refactor was judged not worth the cost) |
+> | Stats dashboard | Done (client-side) |
+
 ---
 
 ## 1. What this app does
