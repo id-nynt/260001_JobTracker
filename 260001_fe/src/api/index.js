@@ -2,7 +2,7 @@ import { getSession } from './session'
 import { httpApi } from './httpApi'
 import { mockApi, startDemo } from './mockApi'
 
-export { getErrorMessage, API_CONFIGURED } from './client'
+export { getErrorMessage, API_CONFIGURED, wakeServer } from './client'
 
 // Data calls go to the demo store or the real backend depending on the current session.
 const current = () => (getSession()?.mode === 'demo' ? mockApi : httpApi)

@@ -38,6 +38,21 @@ apiClient.interceptors.response.use(
   }
 )
 
+/**
+ * Free hosting puts the backend to sleep when idle and the first request can take ~30 seconds.
+ * Calling this when the login page opens starts the wake-up while the user is still typing.
+ */
+export function wakeServer() {
+  if (!configuredUrl) return
+
+  try {
+    const { origin } = new URL(configuredUrl, window.location.origin)
+    fetch(`${origin}/health`, { mode: 'no-cors' }).catch(() => {})
+  } catch {
+    // a failed wake-up ping must never get in the user's way
+  }
+}
+
 /** Turns any error from the API layer into a message that can be shown to the user. */
 export function getErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
   if (error?.response) {

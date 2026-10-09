@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, getErrorMessage, API_CONFIGURED } from '../api'
+import { api, getErrorMessage, API_CONFIGURED, wakeServer } from '../api'
+import { useSlowNotice } from '../hooks/useSlowNotice'
 import { useTheme } from '../context/ThemeContext'
 
 function Register({ onAuthenticated }) {
@@ -12,6 +13,12 @@ function Register({ onAuthenticated }) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const slow = useSlowNotice(loading)
+
+  // Start waking a sleeping free-tier backend while the user is still typing
+  useEffect(() => {
+    wakeServer()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -131,6 +138,11 @@ function Register({ onAuthenticated }) {
           >
             {loading ? 'Registering...' : 'Register'}
           </button>
+          {slow && (
+            <p className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              The server runs on free hosting and may need up to a minute to wake up. Thanks for waiting.
+            </p>
+          )}
         </form>
 
         <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-center mt-4`}>
