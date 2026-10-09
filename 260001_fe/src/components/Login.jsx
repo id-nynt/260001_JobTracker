@@ -48,7 +48,7 @@ function Login({ onLoginSuccess }) {
     } catch (err) {
       console.error('Login error details:', err)
       console.error('Error response:', err.response?.data)
-      const errorMsg = err.response?.data?.message || err.message || 'Login failed. Please try again.'
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || err.message || 'Login failed. Please try again.'
       console.log('Setting error:', errorMsg)
       setError(errorMsg)
     } finally {

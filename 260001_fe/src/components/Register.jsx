@@ -60,7 +60,7 @@ function Register({ onLoginSuccess }) {
     } catch (err) {
       console.error('Registration error details:', err)
       console.error('Error response:', err.response?.data)
-      const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please try again.'
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || err.message || 'Registration failed. Please try again.'
       console.log('Setting error:', errorMsg)
       setError(errorMsg)
     } finally {
