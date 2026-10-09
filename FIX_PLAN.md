@@ -273,8 +273,8 @@ Be ready to explain these out loud in 1–2 minutes each:
 
 ## Progress checklist
 
-- [ ] Phase 0: Repo hygiene
-- [ ] Phase 1: Backend per-user data, security, correctness
+- [x] Phase 0: Repo hygiene
+- [x] Phase 1: Backend per-user data, security, correctness (verified by manual API testing; automated tests come in Phase 2)
 - [ ] Phase 2: Backend tests
 - [ ] Phase 3: Frontend API layer, demo mode, bug fixes
 - [ ] Phase 4: Frontend tests, lint, polish
