@@ -275,7 +275,7 @@ Be ready to explain these out loud in 1–2 minutes each:
 
 - [x] Phase 0: Repo hygiene
 - [x] Phase 1: Backend per-user data, security, correctness (verified by manual API testing; automated tests come in Phase 2)
-- [ ] Phase 2: Backend tests
+- [x] Phase 2: Backend tests (18 test methods, 29 cases; mutation-checked)
 - [ ] Phase 3: Frontend API layer, demo mode, bug fixes
 - [ ] Phase 4: Frontend tests, lint, polish
 - [ ] Phase 5: Backend deployed + CI green
